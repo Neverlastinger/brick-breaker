@@ -2,10 +2,10 @@
 import styles from "./index.module.scss";
 import { useEffect } from "react";
 import CanvasElement from "../CanvasElement";
-import useMoveEvents from "./useMoveEvents";
+import useEvents from "./useEvents";
 
 export default function App() {
-    const { setWorker } = useMoveEvents();
+    const { setWorker } = useEvents();
 
     useEffect(() => {
         canvasWorker();

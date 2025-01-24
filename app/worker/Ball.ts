@@ -26,7 +26,7 @@ export default class Ball {
         this.color = color;
         this.velocityX = velocityX;
         this.velocityY = velocityY;
-        this.clearBuffer = Math.max(Math.ceil(velocityX * 1.5), Math.ceil(velocityY * 1.5));
+        this.clearBuffer = Math.abs(Math.ceil(velocityY * 1.5));
     }
 
     draw() {
@@ -45,7 +45,7 @@ export default class Ball {
         this.ctx.fill();
     }
 
-    update(canvasWidth: number, canvasHeight: number, platform: Platform) {
+    update(canvasWidth: number, canvasHeight: number, platform: Platform, onGameOver: () => void) {
         this.x += this.velocityX;
         this.y += this.velocityY;
 
@@ -56,6 +56,12 @@ export default class Ball {
 
         if (this.y - this.radius < 0 || this.y + this.radius > canvasHeight) {
             this.velocityY *= -1; // Reverse vertical direction
+        }
+
+            // Check if the ball hits the ground
+        if (this.y + this.radius > canvasHeight) {
+            onGameOver(); // Trigger the game over callback
+            return;
         }
 
         // Bounce off the platform

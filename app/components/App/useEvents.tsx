@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function useMoveEvents() {
+export default function useEvents() {
     const [direction, setDirection] = useState<'left' | 'right' | null>(null);
     const worker = useRef<Worker>(null);
 
@@ -22,6 +22,17 @@ export default function useMoveEvents() {
                 setDirection(null);
             }
         });
+
+        addEventListener('keydown', (event) => {
+            if (event.code === 'Space' && worker.current) {
+                worker.current.postMessage({ command: 'space' });
+            }
+        });
+
+        return () => {
+            window.removeEventListener('keydown', () => {});
+            window.removeEventListener('keyup', () => {});
+        }
     }, []);
 
     useEffect(() => {
