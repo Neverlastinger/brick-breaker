@@ -2,8 +2,12 @@ import Ball from './Ball';
 import BrickManager from './BrickManager';
 import Platform from './Platform';
 import level1 from './levels/1';
+import level2 from './levels/2';
 
 const BALL_SPEED = 10;
+
+const levels = [level1, level2];
+let currentLevelIndex = 0;
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
@@ -17,7 +21,7 @@ let isGameOver = false;
 function initializeGame(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     platform = new Platform(ctx, { canvasWidth: canvas.width, canvasHeight: canvas.height });
     ball = new Ball(ctx, canvas.width / 2, canvas.height * 0.85, 10, '#00bcd4', BALL_SPEED * Math.random(), -BALL_SPEED);
-    bricks = new BrickManager(level1, ctx, canvas.width);
+    bricks = new BrickManager(levels[currentLevelIndex], ctx, canvas.width);
 }
 
 function draw() {
@@ -28,6 +32,16 @@ function draw() {
     ball.update(canvas.width, canvas.height, platform, onGameOver);
     platform.move(currentDirection, canvas.width);
     bricks.draw(ball);
+
+    if (bricks.isLevelCompleted()) {
+        currentLevelIndex++;
+        if (currentLevelIndex < levels.length) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            initializeGame(canvas, ctx);
+        } else {
+            throw new Error('All levels completed, not implemented yet');
+        }
+    }
 
     cancelAnimationFrame(loopId);
     loopId = requestAnimationFrame(draw);
@@ -41,9 +55,9 @@ function onGameOver() {
         ctx.font = '48px Arial';
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'center';
-        ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('Game Over', canvas.width / 2, canvas.height * 0.8);
         ctx.font = '24px Arial';
-        ctx.fillText('Press Spacebar to start again', canvas.width / 2, canvas.height / 2 + 30);
+        ctx.fillText('Press Spacebar to start again', canvas.width / 2, canvas.height * 0.8 + 30);
     }
 }
 

@@ -73,10 +73,7 @@ export default class Ball {
         }
 
         // Bounce off the platform
-        if (this.checkCollisionWithPlatform(platform)) {
-            this.velocityY *= -1;
-            this.y = platform.getBounds().y - this.radius;
-        }
+        this.checkCollisionWithPlatform(platform);
 
         this.draw();
     }
@@ -93,13 +90,26 @@ export default class Ball {
         this.velocityX *= -1;
     }
 
-    private checkCollisionWithPlatform(platform: Platform): boolean {
+    private checkCollisionWithPlatform(platform: Platform) {
         const { x: platformX, y: platformY, width: platformWidth } = platform.getBounds();
-        
-        return (
+    
+        const isColliding =
             this.y + this.radius >= platformY && // Ball is at the platform's height
             this.x + this.radius > platformX && // Ball's right edge is within platform
-            this.x - this.radius < platformX + platformWidth // Ball's left edge is within platform
-        );
+            this.x - this.radius < platformX + platformWidth; // Ball's left edge is within platform
+    
+        if (isColliding) {
+            // Calculate the offset from the platform's center
+            const platformCenter = platformX + platformWidth / 2;
+            const hitOffset = (this.x - platformCenter) / (platformWidth / 2); // Normalize between -1 and 1
+    
+            // Adjust horizontal velocity based on the hit offset
+            const maxBounceAngle = Math.PI / 4; // 45 degrees
+            const bounceAngle = hitOffset * maxBounceAngle;
+    
+            const speed = Math.sqrt(this.velocityX ** 2 + this.velocityY ** 2); // Maintain constant speed
+            this.velocityX = speed * Math.sin(bounceAngle);
+            this.velocityY = -Math.abs(speed * Math.cos(bounceAngle)); // Ensure the ball moves upward
+        }
     }
 }

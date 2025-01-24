@@ -9,6 +9,7 @@ export default class BrickManager {
     private brickWidth: number;
     private brickHeight: number;
     private brickPadding: number;
+    private levelCompleted = false;
 
     constructor(
         level: (number | null)[][],
@@ -48,5 +49,13 @@ export default class BrickManager {
                 hasCollided = true;
             }
         });
+
+        if (this.bricks.every((brick) => !brick.getIsVisible())) {
+            this.levelCompleted = true;
+        }
+    }
+
+    isLevelCompleted() {
+        return this.levelCompleted;
     }
 }

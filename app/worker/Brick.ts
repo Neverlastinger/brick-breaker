@@ -41,6 +41,10 @@ export default class Brick {
         return hasCollided;
     }
 
+    getIsVisible() {
+        return this.isVisible;
+    }
+
     private isColliding(ball: Ball): boolean {
         if (!this.isVisible) return false;
 
@@ -61,7 +65,7 @@ export default class Brick {
             const overlapLeft = ballX - ballRadius - this.x;
             const overlapRight = this.x + this.width - (ballX + ballRadius);
 
-            const threshold = 6;
+            const threshold = Math.abs(ballVelocityY);
 
             if (overlapTop < threshold && ballVelocityY > 0) { // Top collision and ball is moving down
                 ball.reverseY(); 

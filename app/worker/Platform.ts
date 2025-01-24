@@ -4,7 +4,7 @@ export default class Platform {
     private y: number;
     private width = 100;
     private height = 10;
-    private speed = 8;
+    private speed = 12;
     private color = '#b26500';
     private clearBuffer = this.speed + 1;
 
