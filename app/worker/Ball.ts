@@ -9,6 +9,7 @@ export default class Ball {
     private velocityX: number; 
     private velocityY: number; 
     private clearBuffer: number;
+    private lastTime: number | null = null;
 
     constructor(
         ctx: CanvasRenderingContext2D,
@@ -46,8 +47,15 @@ export default class Ball {
     }
 
     update(canvasWidth: number, canvasHeight: number, platform: Platform, onGameOver: () => void) {
-        this.x += this.velocityX;
-        this.y += this.velocityY;
+        const now = performance.now();
+        if (this.lastTime === null) {
+            this.lastTime = now;
+        }
+        const deltaTime = (now - this.lastTime) / 1000; // Time in seconds
+        this.lastTime = now;
+
+        this.x += this.velocityX * deltaTime * 60; // Normalize to 60 FPS
+        this.y += this.velocityY * deltaTime * 60; // Normalize to 60 FPS
 
         // Check for collisions with the walls
         if (this.x - this.radius < 0 || this.x + this.radius > canvasWidth) {

@@ -3,7 +3,7 @@ import BrickManager from './BrickManager';
 import Platform from './Platform';
 import level1 from './levels/1';
 
-const BALL_SPEED = 7;
+const BALL_SPEED = 10;
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
