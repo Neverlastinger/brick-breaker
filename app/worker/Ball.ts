@@ -80,7 +80,7 @@ export default class Ball {
     }
 
     private checkCollisionWithPlatform(platform: Platform): boolean {
-        const { x: platformX, y: platformY, width: platformWidth, height: platformHeight } = platform.getBounds();
+        const { x: platformX, y: platformY, width: platformWidth } = platform.getBounds();
         
         return (
             this.y + this.radius >= platformY && // Ball is at the platform's height

@@ -1,4 +1,3 @@
-import { skip } from 'node:test';
 import Ball from './Ball';
 import Brick from './Brick';
 
