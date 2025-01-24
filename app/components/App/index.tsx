@@ -3,6 +3,7 @@ import styles from "./index.module.scss";
 import { useEffect } from "react";
 import CanvasElement from "../CanvasElement";
 import useEvents from "./useEvents";
+import Copy from "../Copy";
 
 export default function App() {
     const { setWorker } = useEvents();
@@ -29,6 +30,7 @@ export default function App() {
     return (
         <div className={styles.wrapper}>
             <CanvasElement />
+            <Copy />
         </div>
     );
 }
