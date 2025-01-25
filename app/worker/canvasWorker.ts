@@ -5,6 +5,7 @@ import level1 from './levels/1';
 import level2 from './levels/2';
 
 const BALL_SPEED = 10;
+const BALL_RADIUS = 10;
 
 const levels = [level1, level2];
 let currentLevelIndex = 0;
@@ -17,19 +18,30 @@ let ball: Ball;
 let bricks: BrickManager;
 let loopId: ReturnType<typeof requestAnimationFrame>;
 let isGameOver = false;
+let isGameStarted = false;
 
-function initializeGame(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+function initializeGame() {
+    if (!canvas || !ctx) {
+        return;
+    }
+
     platform = new Platform(ctx, { canvasWidth: canvas.width, canvasHeight: canvas.height });
-    ball = new Ball(ctx, canvas.width / 2, canvas.height * 0.85, 10, '#00bcd4', BALL_SPEED * Math.random(), -BALL_SPEED);
+    ball = new Ball(ctx, canvas.width / 2, canvas.height * 0.9 - BALL_RADIUS - 2, BALL_RADIUS, '#00bcd4', BALL_SPEED * Math.random(), -BALL_SPEED);
     bricks = new BrickManager(levels[currentLevelIndex], ctx, canvas.width);
 }
 
 function draw() {
     if (!canvas || !ctx || isGameOver) {
+        cancelAnimationFrame(loopId);
         return;
     }
 
-    ball.update(canvas.width, canvas.height, platform, onGameOver);
+    if (isGameStarted) {
+        ball.update(canvas.width, canvas.height, platform, onGameOver);
+    } else {
+        ball.draw();
+    }
+    
     platform.move(currentDirection, canvas.width);
     bricks.draw(ball);
 
@@ -37,14 +49,17 @@ function draw() {
         currentLevelIndex++;
         if (currentLevelIndex < levels.length) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            initializeGame(canvas, ctx);
+            initializeGame();
         } else {
             throw new Error('All levels completed, not implemented yet');
         }
     }
 
     cancelAnimationFrame(loopId);
-    loopId = requestAnimationFrame(draw);
+
+    if (isGameStarted) {
+        loopId = requestAnimationFrame(draw);
+    }
 }
 
 function onGameOver() {
@@ -61,6 +76,23 @@ function onGameOver() {
     }
 }
 
+function drawStartGameMessage() {
+    if (ctx && canvas) {
+        ctx.font = '48px Arial';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText('Brick Breaker by Rado', canvas.width / 2, canvas.height * 0.8);
+        ctx.font = '24px Arial';
+        ctx.fillText('Press Spacebar to start', canvas.width / 2, canvas.height * 0.8 + 30);
+    }
+}
+
+function clearStartGameMessage() {
+    if (ctx && canvas) {
+        ctx.clearRect(0, canvas.height * 0.8 - 60, canvas.width, 120);
+    }
+}
+
 function restartGame() {
     if (!canvas || !ctx) {
         return;
@@ -69,7 +101,7 @@ function restartGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     isGameOver = false;
-    initializeGame(canvas, ctx);
+    initializeGame();
     draw();
 }
 
@@ -81,17 +113,23 @@ self.onmessage = (event) => {
         ctx = _canvas.getContext('2d');
 
         if (canvas && ctx) {
-            initializeGame(canvas, ctx);
+            initializeGame();
+            drawStartGameMessage();
+            draw();
         }
-
-        draw();
     }
 
     if (direction !== undefined) {
         currentDirection = direction;
     }
 
-    if (command === 'space' && isGameOver) {
-        restartGame();
+    if (command === 'space') {
+        if (isGameOver) {
+            restartGame();
+        } else {
+            isGameStarted = true;
+            clearStartGameMessage();
+            draw();
+        }
     }
 };
