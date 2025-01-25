@@ -57,17 +57,22 @@ export default class Ball {
         this.x += this.velocityX * deltaTime * 60; // Normalize to 60 FPS
         this.y += this.velocityY * deltaTime * 60; // Normalize to 60 FPS
 
-        // Check for collisions with the walls
-        if (this.x - this.radius < 0 || this.x + this.radius > canvasWidth) {
+        // Check for collisions with the left wall
+        if (this.x - this.radius < 0 && this.velocityX < 0) {
             this.velocityX *= -1; // Reverse horizontal direction
         }
 
-        if (this.y - this.radius < 0 || this.y + this.radius > canvasHeight) {
+        if (this.x + this.radius > canvasWidth && this.velocityX > 0) {
+            this.velocityX *= -1; // Reverse horizontal direction
+        }
+
+        // Check for collisions with the ceiling
+        if (this.y - this.radius < 0 && this.velocityY < 0) {
             this.velocityY *= -1; // Reverse vertical direction
         }
 
             // Check if the ball hits the ground
-        if (this.y + this.radius > canvasHeight) {
+        if (this.y + this.radius > canvasHeight && this.velocityY > 0) {
             onGameOver(); // Trigger the game over callback
             return;
         }
@@ -91,25 +96,48 @@ export default class Ball {
     }
 
     private checkCollisionWithPlatform(platform: Platform) {
-        const { x: platformX, y: platformY, width: platformWidth } = platform.getBounds();
-    
+        const { x: platformX, y: platformY, width: platformWidth, height: platformHeight } = platform.getBounds();
+
         const isColliding =
-            this.y + this.radius >= platformY && // Ball is at the platform's height
-            this.x + this.radius > platformX && // Ball's right edge is within platform
-            this.x - this.radius < platformX + platformWidth; // Ball's left edge is within platform
+            this.x + this.radius > platformX &&
+            this.x - this.radius < platformX + platformWidth &&
+            this.y + this.radius > platformY &&
+            this.y - this.radius < platformY + platformHeight;
     
         if (isColliding) {
-            // Calculate the offset from the platform's center
-            const platformCenter = platformX + platformWidth / 2;
-            const hitOffset = (this.x - platformCenter) / (platformWidth / 2); // Normalize between -1 and 1
-    
-            // Adjust horizontal velocity based on the hit offset
-            const maxBounceAngle = Math.PI / 4; // 45 degrees
-            const bounceAngle = hitOffset * maxBounceAngle;
-    
-            const speed = Math.sqrt(this.velocityX ** 2 + this.velocityY ** 2); // Maintain constant speed
-            this.velocityX = speed * Math.sin(bounceAngle);
-            this.velocityY = -Math.abs(speed * Math.cos(bounceAngle)); // Ensure the ball moves upward
+            // Check which side of the object the ball collided with
+            const overlapTop = this.y + this.radius - platformY;
+            const overlapBottom = platformY + platformHeight - (this.y - this.radius);
+            const overlapLeft = this.x - this.radius - platformX
+            const overlapRight = platformX + platformWidth - (this.x + this.radius);
+
+            const threshold = Math.abs(this.velocityY);
+
+            if (overlapTop < threshold && this.velocityY > 0) { // Top collision and ball is moving down
+                this.bounceOffPlatformVertically(platformX, platformWidth);
+            } else if (overlapBottom < threshold && this.velocityY < 0) { // Bottom collision and ball is moving up
+                this.bounceOffPlatformVertically(platformX, platformWidth);
+            }
+            
+            else if (overlapLeft < overlapRight && this.velocityX > 0) { // Left collision and ball is moving to the right
+                this.reverseX(); 
+            } else if (overlapLeft > overlapRight && this.velocityX < 0) { // Right collision and ball is moving to the left
+                this.reverseX(); 
+            }
         }
+    }
+
+    private bounceOffPlatformVertically(platformX: number, platformWidth: number) {
+        // Calculate the offset from the platform's center
+        const platformCenter = platformX + platformWidth / 2;
+        const hitOffset = (this.x - platformCenter) / (platformWidth / 2); // Normalize between -1 and 1
+
+        // Adjust horizontal velocity based on the hit offset
+        const maxBounceAngle = Math.PI / 4; // 45 degrees
+        const bounceAngle = hitOffset * maxBounceAngle;
+
+        const speed = Math.sqrt(this.velocityX ** 2 + this.velocityY ** 2); // Maintain constant speed
+        this.velocityX = speed * Math.sin(bounceAngle);
+        this.velocityY = speed * Math.cos(bounceAngle) * (this.velocityY > 0 ? -1 : 1); // Reverse vertical direction
     }
 }

@@ -1,9 +1,9 @@
-export default class Platform {
-    private ctx: CanvasRenderingContext2D;
-    private x: number;
-    private y: number;
-    private width = 100;
-    private height = 10;
+import CollidableObject from "./CollidableObject";
+
+const PLATFORM_WIDTH = 100;
+const PLATFORM_HEIGHT = 10;
+
+export default class Platform extends CollidableObject {
     private speed = 12;
     private color = '#b26500';
     private clearBuffer = this.speed + 1;
@@ -12,22 +12,8 @@ export default class Platform {
         ctx: CanvasRenderingContext2D,
         { canvasWidth, canvasHeight }: { canvasWidth: number; canvasHeight: number }
     ) {
+        super(ctx, canvasWidth / 2 - PLATFORM_WIDTH / 2, canvasHeight * 0.9, PLATFORM_WIDTH, PLATFORM_HEIGHT);
         this.ctx = ctx;
-        this.x = canvasWidth / 2 - this.width / 2;
-        this.y = canvasHeight * 0.9;
-    }
-
-    draw() {
-        // Clear the previous position
-        this.ctx.clearRect(
-            this.x - this.clearBuffer,
-            this.y - 1,
-            this.width + 2 * this.clearBuffer,
-            this.height + 2
-        );
-
-        this.ctx.fillStyle = this.color;
-        this.ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
     move(direction: 'left' | 'right' | null, canvasWidth: number) {
@@ -38,6 +24,19 @@ export default class Platform {
         }
 
         this.draw();
+    }
+
+    private draw() {
+        // Clear the previous position
+        this.ctx.clearRect(
+            this.x - this.clearBuffer,
+            this.y - 1,
+            this.width + 2 * this.clearBuffer,
+            this.height + 2
+        );
+
+        this.ctx.fillStyle = this.color;
+        this.ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
     getBounds() {
