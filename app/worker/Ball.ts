@@ -17,17 +17,17 @@ export default class Ball {
         y: number,
         radius: number,
         color: string,
-        velocityX: number,
-        velocityY: number
+        speed: number,
     ) {
         this.ctx = ctx;
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.color = color;
-        this.velocityX = velocityX;
-        this.velocityY = velocityY;
-        this.clearBuffer = Math.abs(Math.ceil(velocityY * 1.5));
+        this.velocityX = 0;
+        this.velocityY = speed;
+        this.bounceOffPlatformVertically(0, 0, Math.random() * 2 - 1);
+        this.clearBuffer = Math.abs(Math.ceil(speed * 1.5));
     }
 
     draw() {
@@ -71,7 +71,7 @@ export default class Ball {
             this.velocityY *= -1; // Reverse vertical direction
         }
 
-            // Check if the ball hits the ground
+        // Check if the ball hits the ground
         if (this.y + this.radius > canvasHeight && this.velocityY > 0) {
             onGameOver(); // Trigger the game over callback
             return;
@@ -127,10 +127,10 @@ export default class Ball {
         }
     }
 
-    private bounceOffPlatformVertically(platformX: number, platformWidth: number) {
+    private bounceOffPlatformVertically(platformX: number, platformWidth: number, predefinedHitOffset?: number) {
         // Calculate the offset from the platform's center
         const platformCenter = platformX + platformWidth / 2;
-        const hitOffset = (this.x - platformCenter) / (platformWidth / 2); // Normalize between -1 and 1
+        const hitOffset = predefinedHitOffset || (this.x - platformCenter) / (platformWidth / 2); // Normalize between -1 and 1
 
         // Adjust horizontal velocity based on the hit offset
         const maxBounceAngle = Math.PI / 4; // 45 degrees

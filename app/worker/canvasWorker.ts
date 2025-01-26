@@ -26,7 +26,7 @@ function initializeGame() {
     }
 
     platform = new Platform(ctx, { canvasWidth: canvas.width, canvasHeight: canvas.height });
-    ball = new Ball(ctx, canvas.width / 2, canvas.height * 0.9 - BALL_RADIUS - 2, BALL_RADIUS, '#00bcd4', BALL_SPEED * Math.random(), -BALL_SPEED);
+    ball = new Ball(ctx, canvas.width / 2, canvas.height * 0.9 - BALL_RADIUS - 2, BALL_RADIUS, '#00bcd4', BALL_SPEED);
     bricks = new BrickManager(levels[currentLevelIndex], ctx, canvas.width);
 }
 

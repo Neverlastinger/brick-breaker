@@ -1,12 +1,16 @@
 import CollidableObject from "./CollidableObject";
+import { drawRoundedRect } from "./lib/shape";
 
 const PLATFORM_WIDTH = 100;
 const PLATFORM_HEIGHT = 10;
 
 export default class Platform extends CollidableObject {
     private speed = 12;
-    private color = '#b26500';
+    private color = '#ffcdd2';
     private clearBuffer = this.speed + 1;
+    private borderRadius = 10;
+    private borderWidth = 2;
+    private borderColor = '#ef9a9a';
 
     constructor(
         ctx: CanvasRenderingContext2D,
@@ -29,14 +33,13 @@ export default class Platform extends CollidableObject {
     private draw() {
         // Clear the previous position
         this.ctx.clearRect(
-            this.x - this.clearBuffer,
-            this.y - 1,
-            this.width + 2 * this.clearBuffer,
-            this.height + 2
+            this.x - this.borderWidth - this.clearBuffer,
+            this.y - this.borderWidth - 1,
+            this.width + 2 * this.borderWidth + 2 * this.clearBuffer,
+            this.height + 2 * this.borderWidth + 2
         );
 
-        this.ctx.fillStyle = this.color;
-        this.ctx.fillRect(this.x, this.y, this.width, this.height);
+        drawRoundedRect(this.ctx, this.x, this.y, this.width, this.height, this.borderRadius, this.color, this.borderColor, this.borderWidth);
     }
 
     getBounds() {

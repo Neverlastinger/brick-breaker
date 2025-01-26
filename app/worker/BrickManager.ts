@@ -20,7 +20,7 @@ export default class BrickManager {
         this.rowLength = Math.max(...this.level.map((row) => row.length));
         this.ctx = ctx;
         this.brickPadding = 6;
-        this.brickWidth = (canvasWidth - this.brickPadding * this.rowLength) / this.rowLength;
+        this.brickWidth = (canvasWidth - this.brickPadding * (this.rowLength + 1)) / this.rowLength;
         this.brickHeight = 20;
 
         this.createBricks();
@@ -33,7 +33,7 @@ export default class BrickManager {
                     continue;
                 }
 
-                const x = col * (this.brickWidth + this.brickPadding);
+                const x = this.brickPadding + col * (this.brickWidth + this.brickPadding);
                 const y = row * (this.brickHeight + this.brickPadding);
                 const color = `hsl(${(row / this.level.length) * 360}, 70%, 50%)`;
                 this.bricks.push(new Brick(this.ctx, x, y, this.brickWidth, this.brickHeight, color));
