@@ -43,6 +43,6 @@ export default class Platform extends CollidableObject {
     }
 
     getBounds() {
-        return { x: this.x, y: this.y, width: this.width, height: this.height };
+        return { x: this.x, y: this.y, width: this.width + this.borderWidth, height: this.height + this.borderWidth };
     }
 }
