@@ -1,9 +1,9 @@
 import Ball from './Ball';
 import BrickManager from './BrickManager';
 import Platform from './Platform';
-import level1 from './levels/3';
+import level1 from './levels/1';
 import level2 from './levels/2';
-import level3 from './levels/1';
+import level3 from './levels/3';
 import MessageHandler from './MessageHandler';
 import { ACTIONS } from '../actions';
 
