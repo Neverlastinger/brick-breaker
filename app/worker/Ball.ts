@@ -32,13 +32,7 @@ export default class Ball {
     }
 
     draw() {
-        // Clear the previous position
-        this.ctx.clearRect(
-            this.x - this.radius - this.clearBuffer,
-            this.y - this.radius - this.clearBuffer,
-            this.radius * 2 + 2 * this.clearBuffer,
-            this.radius * 2 + 2 * this.clearBuffer
-        );
+        this.clear();
 
         // Draw the ball at its current position
         this.ctx.beginPath();
@@ -102,6 +96,8 @@ export default class Ball {
     }
 
     positionOnPlatform(platform: Platform) {
+        this.clear();
+        
         const { x: platformX, y: platformY, width: platformWidth, height: platformHeight } = platform.getBounds();
 
         this.x = platformX + platformWidth / 2 - this.radius / 2;
@@ -154,5 +150,14 @@ export default class Ball {
         const speed = Math.sqrt(this.velocityX ** 2 + this.velocityY ** 2); // Maintain constant speed
         this.velocityX = speed * Math.sin(bounceAngle);
         this.velocityY = speed * Math.cos(bounceAngle) * (this.velocityY > 0 ? -1 : 1); // Reverse vertical direction
+    }
+
+    private clear() {
+        this.ctx.clearRect(
+            this.x - this.radius - this.clearBuffer,
+            this.y - this.radius - this.clearBuffer,
+            this.radius * 2 + 2 * this.clearBuffer,
+            this.radius * 2 + 2 * this.clearBuffer
+        );
     }
 }

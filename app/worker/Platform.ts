@@ -11,6 +11,7 @@ export default class Platform extends CollidableObject {
     private borderRadius = 10;
     private borderWidth = 2;
     private borderColor = '#ef9a9a';
+    private canvasWidth: number;
 
     constructor(
         ctx: CanvasRenderingContext2D,
@@ -19,13 +20,14 @@ export default class Platform extends CollidableObject {
         const platformWidth = canvasWidth / PLATFORM_WIDTH_TO_CANVAS_WIDTH_RATIO;
         super(ctx, canvasWidth / 2 - platformWidth / 2, canvasHeight * 0.9, platformWidth, PLATFORM_HEIGHT);
         this.ctx = ctx;
+        this.canvasWidth = canvasWidth;
     }
 
-    move(direction: 'left' | 'right' | null, canvasWidth: number) {
+    move(direction: 'left' | 'right' | null) {
         if (direction === 'left') {
             this.x = Math.max(0, this.x - this.speed); // Prevent moving out on the left
         } else if (direction === 'right') {
-            this.x = Math.min(canvasWidth - this.width, this.x + this.speed); // Prevent moving out on the right
+            this.x = Math.min(this.canvasWidth - this.width, this.x + this.speed); // Prevent moving out on the right
         }
 
         this.draw();

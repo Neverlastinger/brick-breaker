@@ -7,7 +7,8 @@ import level3 from './levels/3';
 import MessageHandler from './MessageHandler';
 import { ACTIONS } from '../actions';
 
-const BALL_SPEED = 10;
+const DEFAULT_BALL_SPEED = 10;
+const CANVAS_HEIGHT_FOR_DEFAULT_SPEED = 400;
 const BALL_RADIUS = 10;
 
 const levels = [level1, level2, level3];
@@ -43,7 +44,7 @@ function initializeGame() {
         platform,
         radius: BALL_RADIUS, 
         color: '#00bcd4', 
-        speed: BALL_SPEED
+        speed: DEFAULT_BALL_SPEED + Math.max(0, canvas.height - CANVAS_HEIGHT_FOR_DEFAULT_SPEED) / 100
     });
 
     bricks = new BrickManager(levels[currentLevelIndex], ctx, canvas.width, canvas.height);
@@ -54,6 +55,10 @@ function draw() {
     if (!canvas || !ctx) {
         cancelAnimationFrame(loopId);
         return;
+    }
+
+    if (gameState === GAME_STATES.RUNNING) {
+        messageHandler.clearMessage();
     }
 
     if (gameState === GAME_STATES.PAUSED) {
@@ -68,7 +73,7 @@ function draw() {
         ball.draw();
     }
 
-    platform.move(currentDirection, canvas.width);
+    platform.move(currentDirection);
     bricks.draw(ball);
 
     if (gameState === GAME_STATES.LIFE_LOST && messageHandler) {
@@ -81,9 +86,13 @@ function draw() {
 
     if (bricks.isLevelCompleted()) {
         currentLevelIndex++;
+
         if (currentLevelIndex < levels.length) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            messageHandler.showMessage(`Level ${currentLevelIndex + 1}`, 'Press Spacebar to continue');
+            gameState = GAME_STATES.PAUSED;
             initializeGame();
+            draw();
         } else {
             gameState = GAME_STATES.GAME_WON;
             ball.draw();
@@ -130,12 +139,11 @@ self.onmessage = (event) => {
                 draw();
             } else if (gameState === GAME_STATES.LIFE_LOST) {
                 gameState = GAME_STATES.RUNNING;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ball.positionOnPlatform(platform);
+                ball.draw();
                 draw();
             } else if (gameState === GAME_STATES.PAUSED) {
                 gameState = GAME_STATES.RUNNING;
-                messageHandler.clearMessage();
                 draw();
             } else if (gameState === GAME_STATES.RUNNING) {
                 gameState = GAME_STATES.PAUSED;
