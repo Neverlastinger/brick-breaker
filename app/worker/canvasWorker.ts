@@ -10,7 +10,7 @@ import { ACTIONS } from '../actions';
 const BALL_SPEED = 10;
 const BALL_RADIUS = 10;
 
-const levels = [level3, level1, level2];
+const levels = [level1, level2, level3];
 let currentLevelIndex = 0;
 
 let canvas: HTMLCanvasElement | null = null;
