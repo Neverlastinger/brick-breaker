@@ -1,25 +1,18 @@
 'use client'
 import styles from "./index.module.scss";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import CanvasElement from "../CanvasElement";
 import useEvents from "./useEvents";
 import Copy from "../Copy";
 import { ACTIONS } from "@/app/actions";
+import useAudioSound from "./useAudioSound";
 
 export default function App() {
     const { setWorker } = useEvents();
 
-    const bounceSound = useMemo(() => (
-        new Audio('assets/audio/bounce.wav')
-    ), []);
-
-    const levelCompleteSound = useMemo(() => (
-        new Audio('assets/audio/level-complete.mp3')
-    ), []);
-
-    const gameOverSound = useMemo(() => (
-        new Audio('assets/audio/game-over.wav')
-    ), []);
+    const bounceSound = useAudioSound('assets/audio/bounce.wav');
+    const levelCompleteSound = useAudioSound('assets/audio/level-complete.mp3');
+    const gameOverSound = useAudioSound('assets/audio/game-over.wav');
 
     useEffect(() => {
         canvasWorker();
@@ -38,13 +31,13 @@ export default function App() {
         worker.onmessage = (event) => {
             const { action } = event.data;
 
-            if (action === ACTIONS.PLAY_BOUNCE_SOUND) {
+            if (action === ACTIONS.PLAY_BOUNCE_SOUND && bounceSound) {
                 bounceSound.currentTime = 0; 
                 bounceSound.play(); 
-            } else if (action === ACTIONS.PLAY_LEVEL_COMPLETE_SOUND) {
+            } else if (action === ACTIONS.PLAY_LEVEL_COMPLETE_SOUND && levelCompleteSound) {
                 levelCompleteSound.currentTime = 0;
                 levelCompleteSound.play();
-            } else if (action === ACTIONS.PLAY_GAME_OVER_SOUND) {
+            } else if (action === ACTIONS.PLAY_GAME_OVER_SOUND && gameOverSound) {
                 gameOverSound.currentTime = 0;
                 gameOverSound.volume = 0.2;
                 gameOverSound.play();
