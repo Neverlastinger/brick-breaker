@@ -1,6 +1,9 @@
 import Ball from './Ball';
 import Brick from './Brick';
 
+const BRICK_HEIGHT_TO_CANVAS_HEIGHT_RATIO = 40;
+const BRICK_PADDING_TO_CANVAS_HEIGHT_RATIO = 160;
+
 export default class BrickManager {
     private ctx: CanvasRenderingContext2D;
     private level: (number | null)[][];
@@ -15,13 +18,14 @@ export default class BrickManager {
         level: (number | null)[][],
         ctx: CanvasRenderingContext2D,
         canvasWidth: number,
+        canvasHeight: number
     ) {
         this.level = level;
         this.rowLength = Math.max(...this.level.map((row) => row.length));
         this.ctx = ctx;
-        this.brickPadding = 6;
+        this.brickPadding = Math.ceil(canvasHeight / BRICK_PADDING_TO_CANVAS_HEIGHT_RATIO);
         this.brickWidth = (canvasWidth - this.brickPadding * (this.rowLength + 1)) / this.rowLength;
-        this.brickHeight = 20;
+        this.brickHeight = canvasHeight / BRICK_HEIGHT_TO_CANVAS_HEIGHT_RATIO;
 
         this.createBricks();
     }

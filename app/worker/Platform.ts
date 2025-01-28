@@ -1,8 +1,8 @@
 import CollidableObject from "./CollidableObject";
 import { drawRoundedRect } from "./lib/shape";
 
-const PLATFORM_WIDTH = 100;
-const PLATFORM_HEIGHT = 10;
+const PLATFORM_WIDTH_TO_CANVAS_WIDTH_RATIO = 6;
+const PLATFORM_HEIGHT = 8;
 
 export default class Platform extends CollidableObject {
     private speed = 12;
@@ -16,7 +16,8 @@ export default class Platform extends CollidableObject {
         ctx: CanvasRenderingContext2D,
         { canvasWidth, canvasHeight }: { canvasWidth: number; canvasHeight: number }
     ) {
-        super(ctx, canvasWidth / 2 - PLATFORM_WIDTH / 2, canvasHeight * 0.9, PLATFORM_WIDTH, PLATFORM_HEIGHT);
+        const platformWidth = canvasWidth / PLATFORM_WIDTH_TO_CANVAS_WIDTH_RATIO;
+        super(ctx, canvasWidth / 2 - platformWidth / 2, canvasHeight * 0.9, platformWidth, PLATFORM_HEIGHT);
         this.ctx = ctx;
     }
 

@@ -1,9 +1,18 @@
+import { ACTIONS } from "../actions";
 import Platform from "./Platform";
+
+interface Props {
+    ctx: CanvasRenderingContext2D,
+    platform: Platform,
+    radius: number,
+    color: string,
+    speed: number,
+}
 
 export default class Ball {
     private ctx: CanvasRenderingContext2D;
-    private x: number;
-    private y: number;
+    private x: number = 0;
+    private y: number = 0;
     private radius: number;
     private color: string;
     private velocityX: number; 
@@ -11,18 +20,10 @@ export default class Ball {
     private clearBuffer: number;
     private lastTime: number | null = null;
 
-    constructor(
-        ctx: CanvasRenderingContext2D,
-        x: number,
-        y: number,
-        radius: number,
-        color: string,
-        speed: number,
-    ) {
+    constructor({ ctx, platform, radius, color, speed }: Props) {
         this.ctx = ctx;
-        this.x = x;
-        this.y = y;
         this.radius = radius;
+        this.positionOnPlatform(platform);
         this.color = color;
         this.velocityX = 0;
         this.velocityY = speed;
@@ -59,16 +60,17 @@ export default class Ball {
 
         // Check for collisions with the left wall
         if (this.x - this.radius < 0 && this.velocityX < 0) {
-            this.velocityX *= -1; // Reverse horizontal direction
+            this.reverseX(); // Reverse horizontal direction
         }
 
+        // Check for collisions with the right wall
         if (this.x + this.radius > canvasWidth && this.velocityX > 0) {
-            this.velocityX *= -1; // Reverse horizontal direction
+            this.reverseX(); // Reverse horizontal direction
         }
 
         // Check for collisions with the ceiling
         if (this.y - this.radius < 0 && this.velocityY < 0) {
-            this.velocityY *= -1; // Reverse vertical direction
+            this.reverseY(); // Reverse vertical direction
         }
 
         // Check if the ball hits the ground
@@ -93,6 +95,17 @@ export default class Ball {
 
     reverseX() {
         this.velocityX *= -1;
+    }
+
+    pause() {
+        this.lastTime = null;
+    }
+
+    positionOnPlatform(platform: Platform) {
+        const { x: platformX, y: platformY, width: platformWidth, height: platformHeight } = platform.getBounds();
+
+        this.x = platformX + platformWidth / 2 - this.radius / 2;
+        this.y = platformY - platformHeight / 2 - this.radius;
     }
 
     private checkCollisionWithPlatform(platform: Platform) {
@@ -124,6 +137,8 @@ export default class Ball {
             } else if (overlapLeft > overlapRight && this.velocityX < 0) { // Right collision and ball is moving to the left
                 this.reverseX(); 
             }
+
+            postMessage({ action: ACTIONS.PLAY_BOUNCE_SOUND });
         }
     }
 

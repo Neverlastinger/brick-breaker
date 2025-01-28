@@ -2,6 +2,7 @@ import Ball from "./Ball";
 import CollidableObject from "./CollidableObject";
 import { darkenHslColor } from "./lib/color";
 import { drawRoundedRect } from "./lib/shape";
+import { ACTIONS } from "../actions";
 
 export default class Brick extends CollidableObject {
     private color: string;
@@ -37,6 +38,7 @@ export default class Brick extends CollidableObject {
 
         if (hasCollided) {
             this.isVisible = false;
+            postMessage({ action: ACTIONS.PLAY_BOUNCE_SOUND });
         }
         
         this.ctx.clearRect(
