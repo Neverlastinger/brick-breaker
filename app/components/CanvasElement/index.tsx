@@ -1,9 +1,13 @@
-import { useEffect, useLayoutEffect } from "react";
+import { RefObject, useEffect, useLayoutEffect } from "react";
 import styles from "./index.module.scss";
 
 const MAX_WIDTH = 880;
 
-export default function CanvasElement() {
+interface Props {
+    ref: RefObject<HTMLCanvasElement | null>
+}
+
+export default function CanvasElement({ ref }: Props) {
     useEffect(() => {
         // window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
@@ -24,6 +28,6 @@ export default function CanvasElement() {
     }, []);
 
     return (
-        <canvas id="canvas" className={styles.canvas}></canvas>
+        <canvas id="canvas" className={styles.canvas} ref={ref}></canvas>
     );
 }

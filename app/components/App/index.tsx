@@ -1,6 +1,6 @@
 'use client'
 import styles from "./index.module.scss";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import CanvasElement from "../CanvasElement";
 import useEvents from "./useEvents";
 import Copy from "../Copy";
@@ -8,7 +8,9 @@ import { ACTIONS } from "@/app/actions";
 import useAudioSound from "./useAudioSound";
 
 export default function App() {
-    const { setWorker } = useEvents();
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    const { setWorker } = useEvents(canvasRef);
 
     const bounceSound = useAudioSound('assets/audio/bounce.wav');
     const levelCompleteSound = useAudioSound('assets/audio/level-complete.mp3');
@@ -47,7 +49,7 @@ export default function App() {
 
     return (
         <div className={styles.wrapper}>
-            <CanvasElement />
+            <CanvasElement ref={canvasRef} />
             <Copy />
         </div>
     );

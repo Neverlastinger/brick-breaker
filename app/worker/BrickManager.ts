@@ -43,6 +43,15 @@ export default class BrickManager {
                 this.bricks.push(new Brick(this.ctx, x, y, this.brickWidth, this.brickHeight, color));
             }
         }
+
+        // An idea to position bricks at the bottom
+        //
+        // for (let col = 0; col < this.rowLength; col++) {
+        //     const x = this.brickPadding + col * (this.brickWidth + this.brickPadding);
+        //     const y = this.canvasHeight - (this.brickHeight + this.brickPadding);
+        //     const color = `hsl(${(this.rowLength / this.level.length) * 360}, 70%, 50%)`;
+        //     this.bricks.push(new Brick(this.ctx, x, y, this.brickWidth, this.brickHeight, color));
+        // }
     }
 
     draw(ball: Ball) {

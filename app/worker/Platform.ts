@@ -1,7 +1,8 @@
 import CollidableObject from "./CollidableObject";
 import { drawRoundedRect } from "./lib/shape";
 
-const PLATFORM_WIDTH_TO_CANVAS_WIDTH_RATIO = 6;
+const MIN_PLATFORM_WIDTH = 100;
+const PLATFORM_WIDTH_TO_CANVAS_WIDTH_RATIO = 5;
 const PLATFORM_HEIGHT = 8;
 
 export default class Platform extends CollidableObject {
@@ -17,13 +18,15 @@ export default class Platform extends CollidableObject {
         ctx: CanvasRenderingContext2D,
         { canvasWidth, canvasHeight }: { canvasWidth: number; canvasHeight: number }
     ) {
-        const platformWidth = canvasWidth / PLATFORM_WIDTH_TO_CANVAS_WIDTH_RATIO;
+        const platformWidth = Math.max(MIN_PLATFORM_WIDTH, canvasWidth / PLATFORM_WIDTH_TO_CANVAS_WIDTH_RATIO);
         super(ctx, canvasWidth / 2 - platformWidth / 2, canvasHeight * 0.9, platformWidth, PLATFORM_HEIGHT);
         this.ctx = ctx;
         this.canvasWidth = canvasWidth;
     }
 
     move(direction: 'left' | 'right' | null) {
+        this.clear();        
+        
         if (direction === 'left') {
             this.x = Math.max(0, this.x - this.speed); // Prevent moving out on the left
         } else if (direction === 'right') {
@@ -33,7 +36,17 @@ export default class Platform extends CollidableObject {
         this.draw();
     }
 
+    jump(x: number) {
+        this.clear(); 
+        this.x = Math.max(0, Math.min(this.canvasWidth - this.width, x - this.width / 2));
+        this.draw();
+    }
+
     private draw() {
+        drawRoundedRect(this.ctx, this.x, this.y, this.width, this.height, this.borderRadius, this.color, this.borderColor, this.borderWidth);
+    }
+
+    private clear() {
         // Clear the previous position
         this.ctx.clearRect(
             this.x - this.borderWidth - this.clearBuffer,
@@ -41,8 +54,6 @@ export default class Platform extends CollidableObject {
             this.width + 2 * this.borderWidth + 2 * this.clearBuffer,
             this.height + 2 * this.borderWidth + 2
         );
-
-        drawRoundedRect(this.ctx, this.x, this.y, this.width, this.height, this.borderRadius, this.color, this.borderColor, this.borderWidth);
     }
 
     getBounds() {

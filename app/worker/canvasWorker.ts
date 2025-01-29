@@ -6,6 +6,7 @@ import level2 from './levels/2';
 import level3 from './levels/3';
 import MessageHandler from './MessageHandler';
 import { ACTIONS } from '../actions';
+import { COMMANDS } from '../commands';
 
 const DEFAULT_BALL_SPEED = 10;
 const CANVAS_HEIGHT_FOR_DEFAULT_SPEED = 400;
@@ -22,6 +23,7 @@ let ball: Ball;
 let bricks: BrickManager;
 let messageHandler: MessageHandler;
 let loopId: ReturnType<typeof requestAnimationFrame>;
+let movePlatformTo: number | null = null;
 
 enum GAME_STATES {
     RUNNING = 'RUNNING',
@@ -73,7 +75,13 @@ function draw() {
         ball.draw();
     }
 
-    platform.move(currentDirection);
+    if (movePlatformTo !== null) {
+        platform.jump(movePlatformTo);
+        movePlatformTo = null;
+    } else {
+        platform.move(currentDirection);
+    }
+    
     bricks.draw(ball);
 
     if (gameState === GAME_STATES.LIFE_LOST && messageHandler) {
@@ -111,8 +119,30 @@ function draw() {
     }
 }
 
+function restartGameFromBeginning() {
+    if (ctx && canvas) {
+        gameState = GAME_STATES.RUNNING;
+        currentLevelIndex = 0;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        initializeGame();
+        draw();
+    }
+}
+
+function resumeGameAfterLifeLost() {
+    gameState = GAME_STATES.RUNNING;
+    ball.positionOnPlatform(platform);
+    ball.draw();
+    draw();
+}
+
+function resumeGameAfterPause() {
+    gameState = GAME_STATES.RUNNING;
+    draw();
+}
+
 self.onmessage = (event) => {
-    const { canvas: _canvas, direction, command } = event.data;
+    const { canvas: _canvas, direction, command, x } = event.data;
 
     if (_canvas) {
         canvas = _canvas;
@@ -129,26 +159,38 @@ self.onmessage = (event) => {
         currentDirection = direction;
     }
 
-    if (command === 'space') {
+    if (command === COMMANDS.SPACE) {
         if (ctx && canvas) {
             if (gameState === GAME_STATES.GAME_WON) {                
-                gameState = GAME_STATES.RUNNING;
-                currentLevelIndex = 0;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                initializeGame();
-                draw();
+                restartGameFromBeginning();
             } else if (gameState === GAME_STATES.LIFE_LOST) {
-                gameState = GAME_STATES.RUNNING;
-                ball.positionOnPlatform(platform);
-                ball.draw();
-                draw();
+                resumeGameAfterLifeLost();
             } else if (gameState === GAME_STATES.PAUSED) {
-                gameState = GAME_STATES.RUNNING;
-                draw();
+                resumeGameAfterPause();
             } else if (gameState === GAME_STATES.RUNNING) {
                 gameState = GAME_STATES.PAUSED;
                 messageHandler.showMessage('Paused', 'Press Spacebar to continue');
             }
+        }
+    }
+
+    if (command === COMMANDS.TOUCH) {
+        if (ctx && canvas) {
+            if (gameState === GAME_STATES.GAME_WON) {                
+                restartGameFromBeginning();
+            } else if (gameState === GAME_STATES.LIFE_LOST) {
+                resumeGameAfterLifeLost();
+            } else if (gameState === GAME_STATES.PAUSED) {
+                resumeGameAfterPause();
+            } else if (gameState === GAME_STATES.RUNNING) {
+                movePlatformTo = x;
+            }
+        }
+    }
+
+    if (command === COMMANDS.TOUCH_MOVE) {
+        if (gameState === GAME_STATES.RUNNING) {
+            movePlatformTo = x;
         }
     }
 };
