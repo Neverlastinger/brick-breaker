@@ -4,6 +4,8 @@ import Platform from './Platform';
 import level1 from './levels/1';
 import level2 from './levels/2';
 import level3 from './levels/3';
+import level4 from './levels/4'
+import level5 from './levels/5'
 import MessageHandler from './MessageHandler';
 import { ACTIONS } from '../actions';
 import { COMMANDS } from '../commands';
@@ -12,7 +14,7 @@ const DEFAULT_BALL_SPEED = 10;
 const CANVAS_HEIGHT_FOR_DEFAULT_SPEED = 400;
 const BALL_RADIUS = 10;
 
-const levels = [level1, level2, level3];
+const levels = [level1, level2, level3, level4, level5];
 let currentLevelIndex = 0;
 
 let canvas: HTMLCanvasElement | null = null;
