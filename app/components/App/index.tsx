@@ -35,13 +35,15 @@ export default function App() {
 
             if (action === ACTIONS.PLAY_BOUNCE_SOUND && bounceSound) {
                 bounceSound.currentTime = 0; 
+                bounceSound.volume = 0.1;
                 bounceSound.play(); 
             } else if (action === ACTIONS.PLAY_LEVEL_COMPLETE_SOUND && levelCompleteSound) {
                 levelCompleteSound.currentTime = 0;
+                levelCompleteSound.volume = 0.1;
                 levelCompleteSound.play();
             } else if (action === ACTIONS.PLAY_GAME_OVER_SOUND && gameOverSound) {
                 gameOverSound.currentTime = 0;
-                gameOverSound.volume = 0.2;
+                gameOverSound.volume = 0.03;
                 gameOverSound.play();
             }
         };

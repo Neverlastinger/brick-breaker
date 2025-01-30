@@ -29,12 +29,12 @@ export default class Brick extends CollidableObject {
         this.borderRadius = borderRadius;
     }
 
-    draw(ball: Ball, { skipCollisionCheck = false }: { skipCollisionCheck?: boolean } = {}) {
+    draw(balls: Ball[], { skipCollisionCheck = false }: { skipCollisionCheck?: boolean } = {}) {
         if (!this.isVisible) {
             return;
         }
 
-        const hasCollided = skipCollisionCheck ? false : this.isColliding(ball);
+        const hasCollided = skipCollisionCheck ? false : balls.some((ball) => this.isColliding(ball));
 
         if (hasCollided) {
             this.isVisible = false;

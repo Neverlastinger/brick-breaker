@@ -54,11 +54,11 @@ export default class BrickManager {
         // }
     }
 
-    draw(ball: Ball) {
+    draw(balls: Ball[]) {
         let hasCollided = false;
 
         this.bricks.forEach((brick) => {
-            if (brick.draw(ball, { skipCollisionCheck: hasCollided })) {
+            if (brick.draw(balls, { skipCollisionCheck: hasCollided })) {
                 hasCollided = true;
             }
         });
