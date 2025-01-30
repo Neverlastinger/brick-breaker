@@ -43,7 +43,17 @@ export default class Platform extends CollidableObject {
     }
 
     private draw() {
-        drawRoundedRect(this.ctx, this.x, this.y, this.width, this.height, this.borderRadius, this.color, this.borderColor, this.borderWidth);
+        drawRoundedRect({
+            ctx: this.ctx, 
+            x: this.x, 
+            y: this.y, 
+            width: this.width, 
+            height: this.height, 
+            radius: this.borderRadius, 
+            color: this.color, 
+            borderColor: this.borderColor, 
+            borderWidth: this.borderWidth
+        });
     }
 
     private clear() {

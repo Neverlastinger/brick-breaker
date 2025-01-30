@@ -1,0 +1,3 @@
+export const BONUSES = {
+    ADDITIONAL_BALL: 'ADDITIONAL_BALL'
+} 

@@ -1,8 +1,15 @@
 import Ball from './Ball';
 import Brick from './Brick';
+import { BONUSES } from './bonuses';
+import { ADDITIONAL_BALL_CHANCE, MAX_BONUS_BALLS } from './game-config';
 
 const BRICK_HEIGHT_TO_CANVAS_HEIGHT_RATIO = 40;
 const BRICK_PADDING_TO_CANVAS_HEIGHT_RATIO = 160;
+
+interface DrawParams {
+    balls: Ball[], 
+    onBallReleased: (ball: Ball) => void
+}
 
 export default class BrickManager {
     private ctx: CanvasRenderingContext2D;
@@ -13,6 +20,7 @@ export default class BrickManager {
     private brickHeight: number;
     private brickPadding: number;
     private levelCompleted = false;
+    private bonusBalls = 0;
 
     constructor(
         level: (number | null)[][],
@@ -40,7 +48,7 @@ export default class BrickManager {
                 const x = this.brickPadding + col * (this.brickWidth + this.brickPadding);
                 const y = row * (this.brickHeight + this.brickPadding);
                 const color = `hsl(${(row / this.level.length) * 360}, 70%, 50%)`;
-                this.bricks.push(new Brick(this.ctx, x, y, this.brickWidth, this.brickHeight, color));
+                this.bricks.push(new Brick(this.ctx, x, y, this.brickWidth, this.brickHeight, color, this.getSpecialty()));
             }
         }
 
@@ -54,11 +62,22 @@ export default class BrickManager {
         // }
     }
 
-    draw(balls: Ball[]) {
+    private getSpecialty(): string | null {
+        const rand = Math.random();
+
+        if (this.bonusBalls < MAX_BONUS_BALLS && ADDITIONAL_BALL_CHANCE[0] < rand  && rand < ADDITIONAL_BALL_CHANCE[1]) {
+            this.bonusBalls++;
+            return BONUSES.ADDITIONAL_BALL
+        }
+
+        return null;
+    }
+
+    draw({ balls, onBallReleased }: DrawParams) {
         let hasCollided = false;
 
         this.bricks.forEach((brick) => {
-            if (brick.draw(balls, { skipCollisionCheck: hasCollided })) {
+            if (brick.draw(balls, { skipCollisionCheck: hasCollided, onBallReleased })) {
                 hasCollided = true;
             }
         });

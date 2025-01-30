@@ -11,10 +11,8 @@ import level5 from './levels/5';
 import MessageHandler from './MessageHandler';
 import { ACTIONS } from '../actions';
 import { COMMANDS } from '../commands';
-
-const DEFAULT_BALL_SPEED = 10;
-const CANVAS_HEIGHT_FOR_DEFAULT_SPEED = 400;
-const BALL_RADIUS = 10;
+import { BALL_RADIUS, CANVAS_HEIGHT_FOR_DEFAULT_SPEED, DEFAULT_BALL_COLOR, DEFAULT_BALL_SPEED } from './game-config';
+import BallManager from './BallManager';
 
 const levels = [level1, level2, level3, level3b, level3c, level4, level5];
 let currentLevelIndex = 0;
@@ -23,7 +21,7 @@ let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 let currentDirection: 'left' | 'right' | null = null;
 let platform: Platform;
-let ball: Ball;
+let ballManager: BallManager;
 let bricks: BrickManager;
 let messageHandler: MessageHandler;
 let loopId: ReturnType<typeof requestAnimationFrame>;
@@ -45,13 +43,16 @@ function initializeGame() {
 
     platform = new Platform(ctx, { canvasWidth: canvas.width, canvasHeight: canvas.height });
 
-    ball = new Ball({
+    const ball = new Ball({
         ctx, 
         platform,
         radius: BALL_RADIUS, 
-        color: '#00bcd4', 
+        color: DEFAULT_BALL_COLOR, 
         speed: DEFAULT_BALL_SPEED + Math.max(0, canvas.height - CANVAS_HEIGHT_FOR_DEFAULT_SPEED) / 100
     });
+
+    ballManager = new BallManager();
+    ballManager.push(ball);
 
     bricks = new BrickManager(levels[currentLevelIndex], ctx, canvas.width, canvas.height);
     messageHandler = new MessageHandler(ctx, canvas);
@@ -68,15 +69,18 @@ function draw() {
     }
 
     if (gameState === GAME_STATES.PAUSED) {
-        ball.draw();
-        ball.pause();
+        ballManager.draw();
+        ballManager.pause();
     } else if (gameState === GAME_STATES.RUNNING) {
-        ball.update(canvas.width, canvas.height, platform, () => {
+        ballManager.clear();
+
+        ballManager.update(canvas.width, canvas.height, platform, () => {
             gameState = GAME_STATES.LIFE_LOST;
-            ball.pause();
+            ballManager.pause();
         });
     } else {
-        ball.draw();
+        ballManager.clear();
+        ballManager.draw();
     }
 
     if (movePlatformTo !== null) {
@@ -86,7 +90,13 @@ function draw() {
         platform.move(currentDirection);
     }
     
-    bricks.draw([ball]);
+    bricks.draw({ 
+        balls: ballManager.getBalls(), 
+        onBallReleased: (ball: Ball) => {
+            ball.release();
+            ballManager.push(ball);
+        }
+    });
 
     if (gameState === GAME_STATES.LIFE_LOST && messageHandler) {
         messageHandler.showMessage('Life Lost', 'Press Spacebar to continue');
@@ -107,7 +117,7 @@ function draw() {
             draw();
         } else {
             gameState = GAME_STATES.GAME_WON;
-            ball.draw();
+            ballManager.draw();
             messageHandler.showMessage('You Won!', 'Press Spacebar to start again');
         }
 
@@ -135,8 +145,22 @@ function restartGameFromBeginning() {
 
 function resumeGameAfterLifeLost() {
     gameState = GAME_STATES.RUNNING;
-    ball.positionOnPlatform(platform);
-    ball.draw();
+
+    if (!ctx || !canvas) {
+        return;
+    }
+
+    const ball = new Ball({
+        ctx, 
+        platform,
+        radius: BALL_RADIUS, 
+        color: DEFAULT_BALL_COLOR, 
+        speed: DEFAULT_BALL_SPEED + Math.max(0, canvas.height - CANVAS_HEIGHT_FOR_DEFAULT_SPEED) / 100
+    });
+
+    ballManager.push(ball);
+    ballManager.positionOnPlatform(platform);
+    ballManager.draw();
     draw();
 }
 

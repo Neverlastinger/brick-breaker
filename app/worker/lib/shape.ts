@@ -1,4 +1,4 @@
-export function drawRoundedRect(
+interface Params {
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
@@ -8,7 +8,21 @@ export function drawRoundedRect(
     color: string,
     borderColor?: string,
     borderWidth?: number
-) {
+    noFill?: boolean
+}
+
+export function drawRoundedRect({
+    ctx,
+    x,
+    y,
+    width,
+    height,
+    radius,
+    color,
+    borderColor,
+    borderWidth,
+    noFill
+}: Params) {
     const r = Math.min(radius, width / 2, height / 2); // Ensure radius isn't too large
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -22,8 +36,10 @@ export function drawRoundedRect(
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.closePath();
 
-    ctx.fillStyle = color;
-    ctx.fill();
+    if (!noFill) {
+        ctx.fillStyle = color;
+        ctx.fill();
+    }
     
     if (borderWidth && borderColor) {
         // Draw the border
