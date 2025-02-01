@@ -13,6 +13,7 @@ import { ACTIONS } from '../actions';
 import { COMMANDS } from '../commands';
 import { BALL_RADIUS, CANVAS_HEIGHT_FOR_DEFAULT_SPEED, DEFAULT_BALL_COLOR, DEFAULT_BALL_SPEED } from './game-config';
 import BallManager from './BallManager';
+import Timer from './Timer';
 
 const levels = [level1, level2, level3, level3b, level3c, level4, level5];
 let currentLevelIndex = 0;
@@ -26,36 +27,56 @@ let bricks: BrickManager;
 let messageHandler: MessageHandler;
 let loopId: ReturnType<typeof requestAnimationFrame>;
 let movePlatformTo: number | null = null;
+let timer: Timer;
 
 enum GAME_STATES {
     RUNNING = 'RUNNING',
     PAUSED = 'PAUSED',
     GAME_WON = 'GAME_WON',
     LIFE_LOST = 'LIFE_LOST',
+    GAME_OVER = 'GAME_OVER'
 }
 
 let gameState = GAME_STATES.PAUSED;
 
-function initializeGame() {
+function initializeLevel() {
     if (!canvas || !ctx) {
         return;
     }
 
     platform = new Platform(ctx, { canvasWidth: canvas.width, canvasHeight: canvas.height });
+    const ballSpeed = DEFAULT_BALL_SPEED + Math.max(0, canvas.height - CANVAS_HEIGHT_FOR_DEFAULT_SPEED) / 100;
 
     const ball = new Ball({
         ctx, 
         platform,
         radius: BALL_RADIUS, 
         color: DEFAULT_BALL_COLOR, 
-        speed: DEFAULT_BALL_SPEED + Math.max(0, canvas.height - CANVAS_HEIGHT_FOR_DEFAULT_SPEED) / 100
+        speed: ballSpeed
     });
 
     ballManager = new BallManager();
     ballManager.push(ball);
 
-    bricks = new BrickManager(levels[currentLevelIndex], ctx, canvas.width, canvas.height);
+    bricks = new BrickManager({ 
+        level: levels[currentLevelIndex], 
+        ctx,  
+        canvasWidth: canvas.width, 
+        canvasHeight: canvas.height,
+        bonusSpeed: ballSpeed * 0.6
+    });
+
     messageHandler = new MessageHandler(ctx, canvas);
+
+    if (!timer) {
+        timer = new Timer({
+            ctx,
+            canvas,
+            onTimeUp: () => {
+                triggerGameOver();
+            },
+        });
+    }
 }
 
 function draw() {
@@ -63,6 +84,8 @@ function draw() {
         cancelAnimationFrame(loopId);
         return;
     }
+
+    timer.draw();
 
     if (gameState === GAME_STATES.RUNNING) {
         messageHandler.clearMessage();
@@ -77,6 +100,8 @@ function draw() {
         ballManager.update(canvas.width, canvas.height, platform, () => {
             gameState = GAME_STATES.LIFE_LOST;
             ballManager.pause();
+            timer.stop();
+            bricks.cancelBonuses();
         });
     } else {
         ballManager.clear();
@@ -95,11 +120,24 @@ function draw() {
         onBallReleased: (ball: Ball) => {
             ball.release();
             ballManager.push(ball);
-        }
+        },
+        platform,
+        timer
     });
 
     if (gameState === GAME_STATES.LIFE_LOST && messageHandler) {
-        messageHandler.showMessage('Life Lost', 'Press Spacebar to continue');
+        timer.subtractMinute(); // Lose 1 minute
+        timer.draw();
+
+        if (timer.hasRunOut()) {
+            triggerGameOver();
+        } else {
+            timer.getTime();
+            const minutes = Math.floor(timer.getTime() / 60);
+            const seconds = timer.getTime() % 60;
+
+            messageHandler.showMessage('You lost a minute', `Time remaining: ${minutes}:${seconds}`);
+        }
         
         postMessage({
             action: ACTIONS.PLAY_GAME_OVER_SOUND
@@ -113,7 +151,7 @@ function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             messageHandler.showMessage(`Level ${currentLevelIndex + 1}`, 'Press Spacebar to continue');
             gameState = GAME_STATES.PAUSED;
-            initializeGame();
+            initializeLevel();
             draw();
         } else {
             gameState = GAME_STATES.GAME_WON;
@@ -138,13 +176,16 @@ function restartGameFromBeginning() {
         gameState = GAME_STATES.RUNNING;
         currentLevelIndex = 0;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        initializeGame();
+        timer.reset();
+        timer.start();
+        initializeLevel();
         draw();
     }
 }
 
 function resumeGameAfterLifeLost() {
     gameState = GAME_STATES.RUNNING;
+    timer.start();
 
     if (!ctx || !canvas) {
         return;
@@ -166,7 +207,15 @@ function resumeGameAfterLifeLost() {
 
 function resumeGameAfterPause() {
     gameState = GAME_STATES.RUNNING;
+    timer.start();
     draw();
+}
+
+function triggerGameOver() {
+    gameState = GAME_STATES.GAME_OVER;
+    messageHandler.showMessage('Game Over', 'Press Spacebar to restart');
+    postMessage({ action: ACTIONS.PLAY_GAME_OVER_SOUND });
+    timer.stop();
 }
 
 self.onmessage = (event) => {
@@ -177,7 +226,7 @@ self.onmessage = (event) => {
         ctx = _canvas.getContext('2d');
 
         if (canvas && ctx) {
-            initializeGame();
+            initializeLevel();
             draw();
             messageHandler.showMessage('Brick Breaker by Rado', 'Press Spacebar to start');
         }
@@ -191,12 +240,16 @@ self.onmessage = (event) => {
         if (ctx && canvas) {
             if (gameState === GAME_STATES.GAME_WON) {                
                 restartGameFromBeginning();
+            } else if (gameState === GAME_STATES.GAME_OVER) {
+                restartGameFromBeginning()
             } else if (gameState === GAME_STATES.LIFE_LOST) {
                 resumeGameAfterLifeLost();
             } else if (gameState === GAME_STATES.PAUSED) {
                 resumeGameAfterPause();
             } else if (gameState === GAME_STATES.RUNNING) {
                 gameState = GAME_STATES.PAUSED;
+                timer.stop();
+                bricks.cancelBonuses();
                 messageHandler.showMessage('Paused', 'Press Spacebar to continue');
             }
         }
@@ -206,6 +259,8 @@ self.onmessage = (event) => {
         if (ctx && canvas) {
             if (gameState === GAME_STATES.GAME_WON) {                
                 restartGameFromBeginning();
+            } else if (gameState === GAME_STATES.GAME_OVER) {
+                restartGameFromBeginning()
             } else if (gameState === GAME_STATES.LIFE_LOST) {
                 resumeGameAfterLifeLost();
             } else if (gameState === GAME_STATES.PAUSED) {

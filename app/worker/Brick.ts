@@ -5,6 +5,20 @@ import { drawRoundedRect } from "./lib/shape";
 import { ACTIONS } from "../actions";
 import { BONUSES } from "./bonuses";
 import { BALL_RADIUS } from "./game-config";
+import FallingBonus from "./FallingBonus";
+import Platform from "./Platform";
+import Timer from "./Timer";
+
+interface Props {
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: string,
+    bonus: string | null
+    bonusSpeed: number;
+}
 
 export default class Brick extends CollidableObject {
     private color: string;
@@ -12,28 +26,32 @@ export default class Brick extends CollidableObject {
     private borderColor: string;
     private borderWidth: number = 3;
     private borderRadius: number = 8;
-    private specialty: string | null;
+    private bonus: string | null;
+    private bonusSpeed: number;
     
     private bonusBall: Ball | null = null;
+    private fallingBonus: FallingBonus | null = null;
 
-    constructor(
-        ctx: CanvasRenderingContext2D,
-        x: number,
-        y: number,
-        width: number,
-        height: number,
-        color: string,
-        specialty: string | null
-    ) {
+    constructor({ ctx, x, y, width, height, color, bonus, bonusSpeed }: Props) {
         super(ctx, x, y, width, height);
         this.color = color;
         this.isVisible = true;
         this.borderColor = darkenHslColor(color, 30);
-        this.specialty = specialty;
+        this.bonus = bonus;
+        this.bonusSpeed = bonusSpeed;
     }
 
     draw(balls: Ball[], { skipCollisionCheck = false, onBallReleased }: { skipCollisionCheck?: boolean, onBallReleased: (ball: Ball) => void }) {
-        if (!this.isVisible || balls.length == 0) {
+        if (balls.length === 0) {
+            return;
+        }
+
+        if (!this.isVisible) {
+            if (this.fallingBonus) {
+                this.fallingBonus.update();
+                this.fallingBonus.draw();
+            }
+
             return;
         }
 
@@ -46,6 +64,17 @@ export default class Brick extends CollidableObject {
             if (this.bonusBall) {
                 onBallReleased(this.bonusBall);
             }
+
+            // If the brick has extra time, create a falling bonus
+            if (this.bonus === BONUSES.EXTRA_TIME) {
+                this.fallingBonus = new FallingBonus({
+                    ctx: this.ctx, 
+                    x: this.x + this.width / 2, 
+                    y: this.y, 
+                    type: BONUSES.EXTRA_TIME,
+                    speed: this.bonusSpeed
+                });
+            }
         }
         
         this.ctx.clearRect(
@@ -56,7 +85,7 @@ export default class Brick extends CollidableObject {
         );
 
         if (this.isVisible) {
-            if (this.specialty === BONUSES.ADDITIONAL_BALL) {
+            if (this.bonus === BONUSES.ADDITIONAL_BALL) {
                 this.bonusBall = new Ball({
                     ctx: this.ctx,
                     color: this.color,
@@ -79,7 +108,7 @@ export default class Brick extends CollidableObject {
                 color: this.color, 
                 borderColor: this.borderColor, 
                 radius: this.borderRadius,
-                noFill: !!this.specialty
+                noFill: this.bonus === BONUSES.ADDITIONAL_BALL
             });
         }
 
@@ -88,5 +117,16 @@ export default class Brick extends CollidableObject {
 
     getIsVisible() {
         return this.isVisible;
+    }
+
+    checkBonusCollision(platform: Platform, timer: Timer) {
+        if (this.fallingBonus) {
+            this.fallingBonus.checkCollision(platform, timer);
+        }
+    }
+
+    removeFallingBonus() {
+        this.fallingBonus?.destroy();
+        this.fallingBonus = null;
     }
 }
