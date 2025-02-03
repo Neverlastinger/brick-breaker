@@ -9,6 +9,7 @@ interface Props {
     y: number, 
     type: string
     speed: number;
+    difficulty: number;
 }
 
 export default class FallingBonus {
@@ -20,13 +21,15 @@ export default class FallingBonus {
     private type: string;
     private isActive: boolean = true;
     private lastTime: number | null = null;
+    private difficulty: number;
 
-    constructor({ ctx, x, y, type, speed }: Props) {
+    constructor({ ctx, x, y, type, speed, difficulty }: Props) {
         this.ctx = ctx;
         this.x = x;
         this.y = y;
         this.type = type;
         this.speed = speed;
+        this.difficulty = difficulty;
     }
 
     update() {
@@ -64,12 +67,12 @@ export default class FallingBonus {
         this.ctx.stroke();
         this.ctx.closePath();
 
-        // Draw "+30" text inside the circle
+        // Draw text inside the circle
         this.ctx.fillStyle = color
         this.ctx.font = "bold 12px Arial";
         this.ctx.textAlign = "center";
         this.ctx.textBaseline = "middle";
-        this.ctx.fillText(`+${EXTRA_TIME_AMOUNT}`, this.x, this.y);
+        this.ctx.fillText(`+${this.getTimeToAdd()}`, this.x, this.y);
     }
 
     checkCollision(platform: Platform, timer: Timer) {
@@ -85,7 +88,7 @@ export default class FallingBonus {
             this.isActive = false;
             if (this.type === BONUSES.EXTRA_TIME) {
                 this.clear();
-                timer.addTime(EXTRA_TIME_AMOUNT);
+                timer.addTime(this.getTimeToAdd());
             }
         }
     }
@@ -93,6 +96,10 @@ export default class FallingBonus {
     destroy() {
         this.isActive = false;
         this.clear();
+    }
+
+    private getTimeToAdd() {
+        return EXTRA_TIME_AMOUNT[this.difficulty] || EXTRA_TIME_AMOUNT[EXTRA_TIME_AMOUNT.length - 1]
     }
 
     private clear() {

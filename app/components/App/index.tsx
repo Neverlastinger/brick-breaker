@@ -14,6 +14,7 @@ export default function App() {
 
     const bounceSound = useAudioSound('assets/audio/bounce.wav');
     const levelCompleteSound = useAudioSound('assets/audio/level-complete.mp3');
+    const lifeLostSound = useAudioSound('assets/audio/life-lost.wav');
     const gameOverSound = useAudioSound('assets/audio/game-over.wav');
 
     useEffect(() => {
@@ -41,9 +42,13 @@ export default function App() {
                 levelCompleteSound.currentTime = 0;
                 levelCompleteSound.volume = 0.1;
                 levelCompleteSound.play();
+            } else if (action === ACTIONS.PLAY_LIFE_LOST_SOUND && lifeLostSound) {
+                lifeLostSound.currentTime = 0;
+                lifeLostSound.volume = 0.03;
+                lifeLostSound.play();
             } else if (action === ACTIONS.PLAY_GAME_OVER_SOUND && gameOverSound) {
                 gameOverSound.currentTime = 0;
-                gameOverSound.volume = 0.03;
+                gameOverSound.volume = 0.1;
                 gameOverSound.play();
             }
         };

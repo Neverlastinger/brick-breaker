@@ -17,6 +17,7 @@ import Timer from './Timer';
 
 const levels = [level1, level2, level3, level3b, level3c, level4, level5];
 let currentLevelIndex = 0;
+let difficulty = 0;
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
@@ -34,6 +35,7 @@ enum GAME_STATES {
     PAUSED = 'PAUSED',
     GAME_WON = 'GAME_WON',
     LIFE_LOST = 'LIFE_LOST',
+    GAME_OVER_BLOCKED_SCREEN = 'GAME_OVER_BLOCKED_SCREEN',
     GAME_OVER = 'GAME_OVER'
 }
 
@@ -60,6 +62,7 @@ function initializeLevel() {
 
     bricks = new BrickManager({ 
         level: levels[currentLevelIndex], 
+        difficulty,
         ctx,  
         canvasWidth: canvas.width, 
         canvasHeight: canvas.height,
@@ -136,28 +139,27 @@ function draw() {
             const minutes = Math.floor(timer.getTime() / 60);
             const seconds = timer.getTime() % 60;
 
-            messageHandler.showMessage('You lost a minute', `Time remaining: ${minutes}:${seconds}`);
+            messageHandler.showMessage('You lost a minute', `Time remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+
+            postMessage({
+                action: ACTIONS.PLAY_LIFE_LOST_SOUND
+            });
         }
-        
-        postMessage({
-            action: ACTIONS.PLAY_GAME_OVER_SOUND
-        });
     }
 
     if (bricks.isLevelCompleted()) {
         currentLevelIndex++;
 
-        if (currentLevelIndex < levels.length) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            messageHandler.showMessage(`Level ${currentLevelIndex + 1}`, 'Press Spacebar to continue');
-            gameState = GAME_STATES.PAUSED;
-            initializeLevel();
-            draw();
-        } else {
-            gameState = GAME_STATES.GAME_WON;
-            ballManager.draw();
-            messageHandler.showMessage('You Won!', 'Press Spacebar to start again');
+        if (currentLevelIndex === levels.length) {
+            currentLevelIndex = 0;
+            difficulty++;
         }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        messageHandler.showMessage(`Level ${difficulty * levels.length + currentLevelIndex + 1}`, 'Press Spacebar to continue');
+        gameState = GAME_STATES.PAUSED;
+        initializeLevel();
+        draw();
 
         postMessage({
             action: ACTIONS.PLAY_LEVEL_COMPLETE_SOUND
@@ -174,6 +176,7 @@ function draw() {
 function restartGameFromBeginning() {
     if (ctx && canvas) {
         gameState = GAME_STATES.RUNNING;
+        difficulty = 0;
         currentLevelIndex = 0;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         timer.reset();
@@ -212,10 +215,16 @@ function resumeGameAfterPause() {
 }
 
 function triggerGameOver() {
-    gameState = GAME_STATES.GAME_OVER;
-    messageHandler.showMessage('Game Over', 'Press Spacebar to restart');
+    gameState = GAME_STATES.GAME_OVER_BLOCKED_SCREEN;
+    messageHandler.showMessage('Game Over');
     postMessage({ action: ACTIONS.PLAY_GAME_OVER_SOUND });
     timer.stop();
+
+    setTimeout(() => {
+        messageHandler.clearMessage();
+        messageHandler.showMessage('Game Over', 'Press Spacebar to restart');
+        gameState = GAME_STATES.GAME_OVER;
+    }, 6000);
 }
 
 self.onmessage = (event) => {

@@ -6,4 +6,4 @@ export const DEFAULT_BALL_COLOR = '#00bcd4';
 export const ADDITIONAL_BALL_CHANCE = [0, 0.075];
 export const MAX_BONUS_BALLS = 3;
 export const EXTRA_TIME_CHANCE = [0.076, 0.175];
-export const EXTRA_TIME_AMOUNT = 30;
+export const EXTRA_TIME_AMOUNT = [30, 20, 15, 10, 5];

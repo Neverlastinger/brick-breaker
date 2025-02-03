@@ -16,6 +16,7 @@ export default class Timer {
     private canvas: HTMLCanvasElement;
     private colorStep: number = 255; // Step to transition from red to white
     private highlightColor: "red" | "green" | "white" = 'white';
+    private reverse: boolean = false;
 
     constructor({ onTimeUp, onUpdate, ctx, canvas }: Props) {
         this.timeRemaining = INITIAL_TIME;
@@ -38,6 +39,23 @@ export default class Timer {
 
     private drawTimer(minutes: number, seconds: number) {
         this.ctx.clearRect(this.canvas.width - 120, 0, 100, 50); // Clear previous timer
+
+        if (this.highlightColor !== 'white') { // active animation, calculate next color
+            if (this.reverse) {
+                this.colorStep += 20; // Move back to white
+            } else {
+                this.colorStep -= 20; // Move toward red or green
+            }
+    
+            if (this.colorStep <= 50) {
+                this.reverse = true;
+            }
+    
+            if (this.reverse && this.colorStep >= 255) {
+                this.colorStep = 255;
+                this.highlightColor = 'white';
+            }
+        }
 
         // Compute color based on highlight effect
         let red = 50;
@@ -66,33 +84,7 @@ export default class Timer {
     private startHighlightEffect(color: "red" | "green") {
         this.colorStep = 255;
         this.highlightColor = color; // Set highlight color
-        let reverse = false;
-    
-        const fadeInterval = setInterval(() => {
-            if (reverse) {
-                this.colorStep += 20; // Move back to white
-            } else {
-                this.colorStep -= 20; // Move toward red or green
-            }
-    
-            if (this.colorStep <= 50) {
-                reverse = true;
-            }
-    
-            if (reverse && this.colorStep >= 255) {
-                this.colorStep = 255;
-                this.highlightColor = 'white';
-                clearInterval(fadeInterval);
-            }
-
-            // Dynamically adjust the colors based on the effect
-            const red = color === "red" ? 255 : 50;
-            const green = color === "green" ? 255 : 50;
-            const blue = 50;
-    
-            this.ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
-            this.draw();
-        }, 30);
+        this.reverse = false;
     }
 
     start() {

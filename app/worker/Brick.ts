@@ -18,6 +18,7 @@ interface Props {
     color: string,
     bonus: string | null
     bonusSpeed: number;
+    difficulty: number;
 }
 
 export default class Brick extends CollidableObject {
@@ -28,17 +29,19 @@ export default class Brick extends CollidableObject {
     private borderRadius: number = 8;
     private bonus: string | null;
     private bonusSpeed: number;
+    private difficulty: number;
     
     private bonusBall: Ball | null = null;
     private fallingBonus: FallingBonus | null = null;
 
-    constructor({ ctx, x, y, width, height, color, bonus, bonusSpeed }: Props) {
+    constructor({ ctx, x, y, width, height, color, bonus, bonusSpeed, difficulty }: Props) {
         super(ctx, x, y, width, height);
         this.color = color;
         this.isVisible = true;
         this.borderColor = darkenHslColor(color, 30);
         this.bonus = bonus;
         this.bonusSpeed = bonusSpeed;
+        this.difficulty = difficulty;
     }
 
     draw(balls: Ball[], { skipCollisionCheck = false, onBallReleased }: { skipCollisionCheck?: boolean, onBallReleased: (ball: Ball) => void }) {
@@ -72,7 +75,8 @@ export default class Brick extends CollidableObject {
                     x: this.x + this.width / 2, 
                     y: this.y, 
                     type: BONUSES.EXTRA_TIME,
-                    speed: this.bonusSpeed
+                    speed: this.bonusSpeed,
+                    difficulty: this.difficulty
                 });
             }
         }

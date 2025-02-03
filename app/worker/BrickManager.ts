@@ -17,6 +17,7 @@ interface DrawParams {
 
 interface Props {
     level: (number | null)[][],
+    difficulty: number;
     ctx: CanvasRenderingContext2D,
     canvasWidth: number,
     canvasHeight: number
@@ -26,7 +27,9 @@ interface Props {
 export default class BrickManager {
     private ctx: CanvasRenderingContext2D;
     private level: (number | null)[][];
+    private difficulty: number;
     private rowLength: number;
+    private canvasHeight: number;
     private bricks: Brick[] = [];
     private brickWidth: number;
     private brickHeight: number;
@@ -35,10 +38,12 @@ export default class BrickManager {
     private bonusBalls = 0;
     private bonusSpeed: number;
 
-    constructor({ level, ctx, canvasWidth, canvasHeight, bonusSpeed } : Props) {
+    constructor({ level, difficulty, ctx, canvasWidth, canvasHeight, bonusSpeed } : Props) {
         this.level = level;
+        this.difficulty = difficulty;
         this.rowLength = Math.max(...this.level.map((row) => row.length));
         this.ctx = ctx;
+        this.canvasHeight = canvasHeight;
         this.brickPadding = Math.ceil(canvasHeight / BRICK_PADDING_TO_CANVAS_HEIGHT_RATIO);
         this.brickWidth = (canvasWidth - this.brickPadding * (this.rowLength + 1)) / this.rowLength;
         this.brickHeight = canvasHeight / BRICK_HEIGHT_TO_CANVAS_HEIGHT_RATIO;
@@ -48,6 +53,35 @@ export default class BrickManager {
     }
 
     private createBricks() {
+        for (let col = 0; col < this.difficulty; col++) {
+            const y = this.canvasHeight - (this.brickHeight + this.brickPadding);
+            const color = `hsl(${(this.rowLength / this.level.length) * 360}, 70%, 50%)`;
+
+            this.bricks.push(new Brick({
+                ctx: this.ctx, 
+                x: this.brickPadding + col * (this.brickWidth + this.brickPadding), 
+                y, 
+                width: this.brickWidth, 
+                height: this.brickHeight, 
+                color,
+                bonus: this.getBonus(),
+                bonusSpeed: this.bonusSpeed,
+                difficulty: this.difficulty
+            }));
+
+            this.bricks.push(new Brick({
+                ctx: this.ctx, 
+                x: this.brickPadding + (this.rowLength - 1 - col) * (this.brickWidth + this.brickPadding), 
+                y, 
+                width: this.brickWidth, 
+                height: this.brickHeight, 
+                color,
+                bonus: this.getBonus(),
+                bonusSpeed: this.bonusSpeed,
+                difficulty: this.difficulty
+            }));
+        }
+
         for (let row = 0; row < this.level.length; row++) {
             for (let col = 0; col < this.rowLength; col++) {
                 if (!this.level[row][col]) {
@@ -65,19 +99,11 @@ export default class BrickManager {
                     height: this.brickHeight, 
                     color, 
                     bonus: this.getBonus(),
-                    bonusSpeed: this.bonusSpeed
+                    bonusSpeed: this.bonusSpeed,
+                    difficulty: this.difficulty
                 }));
             }
         }
-
-        // An idea to position bricks at the bottom
-        //
-        // for (let col = 0; col < this.rowLength; col++) {
-        //     const x = this.brickPadding + col * (this.brickWidth + this.brickPadding);
-        //     const y = this.canvasHeight - (this.brickHeight + this.brickPadding);
-        //     const color = `hsl(${(this.rowLength / this.level.length) * 360}, 70%, 50%)`;
-        //     this.bricks.push(new Brick(this.ctx, x, y, this.brickWidth, this.brickHeight, color));
-        // }
     }
 
     private getBonus(): string | null {
