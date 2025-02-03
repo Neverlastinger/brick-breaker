@@ -4,8 +4,9 @@ import Platform from './Platform';
 import level1 from './levels/1';
 import level2 from './levels/2';
 import level3 from './levels/3';
-import level3c from './levels/3c';
 import level3b from './levels/3b';
+import level3c from './levels/3c';
+import level3d from './levels/3d';
 import level4 from './levels/4';
 import level5 from './levels/5';
 import MessageHandler from './MessageHandler';
@@ -15,7 +16,7 @@ import { BALL_RADIUS, CANVAS_HEIGHT_FOR_DEFAULT_SPEED, DEFAULT_BALL_COLOR, DEFAU
 import BallManager from './BallManager';
 import Timer from './Timer';
 
-const levels = [level1, level2, level3, level3b, level3c, level4, level5];
+const levels = [level1, level2, level3, level3b, level3c, level3d, level4, level5];
 let currentLevelIndex = 0;
 let difficulty = 0;
 
