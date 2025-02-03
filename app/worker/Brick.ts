@@ -19,6 +19,7 @@ interface Props {
     bonus: string | null
     bonusSpeed: number;
     difficulty: number;
+    durability: number;
 }
 
 export default class Brick extends CollidableObject {
@@ -30,11 +31,12 @@ export default class Brick extends CollidableObject {
     private bonus: string | null;
     private bonusSpeed: number;
     private difficulty: number;
+    private durability: number;
     
     private bonusBall: Ball | null = null;
     private fallingBonus: FallingBonus | null = null;
 
-    constructor({ ctx, x, y, width, height, color, bonus, bonusSpeed, difficulty }: Props) {
+    constructor({ ctx, x, y, width, height, color, bonus, bonusSpeed, difficulty, durability }: Props) {
         super(ctx, x, y, width, height);
         this.color = color;
         this.isVisible = true;
@@ -42,6 +44,7 @@ export default class Brick extends CollidableObject {
         this.bonus = bonus;
         this.bonusSpeed = bonusSpeed;
         this.difficulty = difficulty;
+        this.durability = durability;
     }
 
     draw(balls: Ball[], { skipCollisionCheck = false, onBallReleased }: { skipCollisionCheck?: boolean, onBallReleased: (ball: Ball) => void }) {
@@ -61,24 +64,29 @@ export default class Brick extends CollidableObject {
         const hasCollided = skipCollisionCheck ? false : balls.some((ball) => this.isColliding(ball));
 
         if (hasCollided) {
-            this.isVisible = false;
+            this.durability--;
+
+            if (this.durability === 0) {
+                this.isVisible = false;
+
+                if (this.bonusBall) {
+                    onBallReleased(this.bonusBall);
+                }
+    
+                // If the brick has extra time, create a falling bonus
+                if (this.bonus === BONUSES.EXTRA_TIME) {
+                    this.fallingBonus = new FallingBonus({
+                        ctx: this.ctx, 
+                        x: this.x + this.width / 2, 
+                        y: this.y, 
+                        type: BONUSES.EXTRA_TIME,
+                        speed: this.bonusSpeed,
+                        difficulty: this.difficulty
+                    });
+                }
+            }
+
             postMessage({ action: ACTIONS.PLAY_BOUNCE_SOUND });
-
-            if (this.bonusBall) {
-                onBallReleased(this.bonusBall);
-            }
-
-            // If the brick has extra time, create a falling bonus
-            if (this.bonus === BONUSES.EXTRA_TIME) {
-                this.fallingBonus = new FallingBonus({
-                    ctx: this.ctx, 
-                    x: this.x + this.width / 2, 
-                    y: this.y, 
-                    type: BONUSES.EXTRA_TIME,
-                    speed: this.bonusSpeed,
-                    difficulty: this.difficulty
-                });
-            }
         }
         
         this.ctx.clearRect(
@@ -109,10 +117,10 @@ export default class Brick extends CollidableObject {
                 width: this.width, 
                 height: this.height, 
                 borderWidth: this.borderWidth, 
-                color: this.color, 
-                borderColor: this.borderColor, 
+                color: this.durability > 1 ? darkenHslColor(this.color, 80) : this.color, 
+                borderColor: this.durability > 1 ? darkenHslColor(this.borderColor, 50) : this.borderColor, 
                 radius: this.borderRadius,
-                noFill: this.bonus === BONUSES.ADDITIONAL_BALL
+                noFill: this.bonus === BONUSES.ADDITIONAL_BALL && this.durability === 1
             });
         }
 

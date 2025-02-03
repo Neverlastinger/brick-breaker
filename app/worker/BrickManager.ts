@@ -3,7 +3,7 @@ import Brick from './Brick';
 import Platform from './Platform';
 import Timer from './Timer';
 import { BONUSES } from './bonuses';
-import { ADDITIONAL_BALL_CHANCE, EXTRA_TIME_CHANCE, MAX_BONUS_BALLS } from './game-config';
+import { ADDITIONAL_BALL_CHANCE, EXTRA_TIME_CHANCE, MAX_BONUS_BALLS, MAX_NUMBER_OF_BOTTOM_SIDE_BRICKS } from './game-config';
 
 const BRICK_HEIGHT_TO_CANVAS_HEIGHT_RATIO = 40;
 const BRICK_PADDING_TO_CANVAS_HEIGHT_RATIO = 160;
@@ -53,9 +53,13 @@ export default class BrickManager {
     }
 
     private createBricks() {
-        for (let col = 0; col < this.difficulty; col++) {
+        const bottomSideBricks = Math.min(this.difficulty, MAX_NUMBER_OF_BOTTOM_SIDE_BRICKS);
+
+        for (let col = 0; col < bottomSideBricks; col++) {
             const y = this.canvasHeight - (this.brickHeight + this.brickPadding);
             const color = `hsl(${(this.rowLength / this.level.length) * 360}, 70%, 50%)`;
+
+            const durability = this.difficulty >= 4 && col === 0 ? 2 : 1;
 
             this.bricks.push(new Brick({
                 ctx: this.ctx, 
@@ -66,7 +70,8 @@ export default class BrickManager {
                 color,
                 bonus: this.getBonus(),
                 bonusSpeed: this.bonusSpeed,
-                difficulty: this.difficulty
+                difficulty: this.difficulty,
+                durability
             }));
 
             this.bricks.push(new Brick({
@@ -78,7 +83,8 @@ export default class BrickManager {
                 color,
                 bonus: this.getBonus(),
                 bonusSpeed: this.bonusSpeed,
-                difficulty: this.difficulty
+                difficulty: this.difficulty,
+                durability
             }));
         }
 
@@ -91,6 +97,8 @@ export default class BrickManager {
                 const x = this.brickPadding + col * (this.brickWidth + this.brickPadding);
                 const y = row * (this.brickHeight + this.brickPadding);
                 const color = `hsl(${(row / this.level.length) * 360}, 70%, 50%)`;
+
+                // normal brick
                 this.bricks.push(new Brick({
                     ctx: this.ctx, 
                     x, 
@@ -100,7 +108,8 @@ export default class BrickManager {
                     color, 
                     bonus: this.getBonus(),
                     bonusSpeed: this.bonusSpeed,
-                    difficulty: this.difficulty
+                    difficulty: this.difficulty,
+                    durability: this.difficulty >= 2 ? 2 : 1
                 }));
             }
         }
