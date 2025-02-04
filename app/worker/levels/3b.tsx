@@ -8,7 +8,7 @@ export default [
     [1, null, 1, null, null, null, 1, null, 1],
     [1, null, 1, 1, 1, 1, 1, null, 1],
     [1, null, null, null, null, null, null, null, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 2, 2, 2, 2, 2, 2, 2, 1],
     [1, null, null, null, null, null, null, null, 1],
     [1, null, 1, 1, 1, 1, 1, null, 1],
     [1, null, 1, null, null, null, 1, null, 1],

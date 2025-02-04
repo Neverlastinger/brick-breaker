@@ -12,13 +12,13 @@ import level5 from './levels/5';
 import MessageHandler from './MessageHandler';
 import { ACTIONS } from '../actions';
 import { COMMANDS } from '../commands';
-import { BALL_RADIUS, CANVAS_HEIGHT_FOR_DEFAULT_SPEED, DEFAULT_BALL_COLOR, DEFAULT_BALL_SPEED } from './game-config';
+import { BALL_RADIUS, CANVAS_HEIGHT_FOR_DEFAULT_SPEED, DEFAULT_BALL_COLOR, DEFAULT_BALL_SPEED, STARTING_DIFFICULTY, STARTING_LEVEL } from './game-config';
 import BallManager from './BallManager';
 import Timer from './Timer';
 
 const levels = [level1, level2, level3, level3b, level3c, level3d, level4, level5];
-let currentLevelIndex = 0;
-let difficulty = 0;
+let currentLevelIndex = STARTING_LEVEL;
+let difficulty = STARTING_DIFFICULTY;
 
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;

@@ -109,7 +109,7 @@ export default class BrickManager {
                     bonus: this.getBonus(),
                     bonusSpeed: this.bonusSpeed,
                     difficulty: this.difficulty,
-                    durability: this.difficulty >= 2 ? 2 : 1
+                    durability: this.difficulty >= 2 ? this.level[row][col] as number : 1
                 }));
             }
         }

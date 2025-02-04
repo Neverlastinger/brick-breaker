@@ -1,3 +1,5 @@
+export const STARTING_LEVEL = 0;
+export const STARTING_DIFFICULTY = 0;
 export const DEFAULT_BALL_SPEED = 8;
 export const CANVAS_HEIGHT_FOR_DEFAULT_SPEED = 400;
 export const INITIAL_TIME = 300;
