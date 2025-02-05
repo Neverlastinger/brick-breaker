@@ -156,6 +156,8 @@ function draw() {
             difficulty++;
         }
 
+        timer.stop();
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         messageHandler.showMessage(`Level ${difficulty * levels.length + currentLevelIndex + 1}`, 'Press Spacebar to continue');
         gameState = GAME_STATES.PAUSED;
